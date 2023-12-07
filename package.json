@@ -1,0 +1,23 @@
+{
+  "name": "professional-backend-project-setup",
+  "version": "1.0.0",
+  "description": "professional backend",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "javascript",
+    "backend"
+  ],
+  "author": "uzair ahmed",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "node": "^21.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "prettier": "^3.1.0"
+  }
+}
