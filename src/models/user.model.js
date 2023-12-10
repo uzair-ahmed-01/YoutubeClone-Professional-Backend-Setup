@@ -73,8 +73,8 @@ userSchema.methods.generateAccessToken = async function () {
         })
 }
 
-userSchema.methods.generateRefereshToken = async function () {
-    return await jwt.sign({
+userSchema.methods.generateRefereshToken = function () {
+    return  jwt.sign({
         _id: this._id,
     },
         process.env.REFRESH_TOKEN_SECRET,
