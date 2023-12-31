@@ -191,7 +191,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     // Access Token - Short lived, not stored in db
     // Refresh Token - Long lived, stored in db
     // When access token expires, the frontend sends the refresh token to the backend to validate user (login), once again.
-    
+
     const incomingRefreshToken = req.cookie.refreshToken || req.body.refreshToken
 
     if (!incomingRefreshToken) {
@@ -412,14 +412,14 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         {
             $addFields: {
                 subScribersCount: {
-                    $size: "$subscibers"
+                    $size: "$subscribers"
                 },
                 channelSubscribedToCount: {
-                    $size: "$subscribedTo"
+                    $size: "$subscriberTo"
                 },
                 isSubscribed: {
                     $cond: {
-                        if: { $in: [req.user?._id, "$subscribers,subscriber"] },
+                        if: { $in: [req.user?._id, "$subscribers.subscriber"] },
                         then: true,
                         else: false
                     }
