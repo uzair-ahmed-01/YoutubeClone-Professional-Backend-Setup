@@ -383,7 +383,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
 
     const { username } = req.params
 
-    if (username) {
+    if (!username) {
         throw new ApiError(400, "Username is missing")
     }
 
