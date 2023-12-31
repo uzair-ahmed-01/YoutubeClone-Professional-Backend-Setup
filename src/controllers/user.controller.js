@@ -4,8 +4,6 @@ import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { jwt } from "jsonwebtoken";
-import { access } from "fs";
-
 
 const generateAccessAndRefreshTokens = async (userId) => {
     try {
@@ -110,7 +108,7 @@ const loginUser = asyncHandler(async (req, res) => {
     // checking username or email is empty or not
     // find the user
     // password check
-    // access and referesh token
+    // generate access and referesh token
     // send cookie
 
     const { email, username, password } = req.body
@@ -161,6 +159,10 @@ const loginUser = asyncHandler(async (req, res) => {
 })
 
 const logoutUser = asyncHandler(async (req, res) => {
+    // we haved user id becouse of auth-middleware "req.user?._id" 
+    // find out user by id and set refreshToken field to undefined
+    // return res and set cookie to "clearCookie"
+
     await User.findByIdAndUpdate(
         req.user._id,
         {
@@ -186,7 +188,10 @@ const logoutUser = asyncHandler(async (req, res) => {
 })
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-
+    // Access Token - Short lived, not stored in db
+    // Refresh Token - Long lived, stored in db
+    // When access token expires, the frontend sends the refresh token to the backend to validate user (login), once again.
+    
     const incomingRefreshToken = req.cookie.refreshToken || req.body.refreshToken
 
     if (!incomingRefreshToken) {
@@ -230,6 +235,12 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 })
 
 const chnageCurrentPassword = asyncHandler(async (req, res) => {
+    // req.body { oldPassword, newPassword }
+    // find user using "req.user?._id" id that already haved and it comes from auth-middleware
+    // checking old password in DB and cheking it matching or not
+    // if oldPassword and DB password match then save newPassword into DB password field
+    // return res
+
     const { oldPassword, newPassword } = req.body
 
     const user = await User.findById(user.req?._id)
@@ -249,11 +260,20 @@ const chnageCurrentPassword = asyncHandler(async (req, res) => {
 })
 
 const getCurrentUser = asyncHandler(async (req, res) => {
+    // in auth-middlerware we already haved user in "req.user" so directly send res
+
     res.status(200)
-        .json(200, req.user, "Current user fetch successfully")
+        .json(
+            new ApiResponse(200, req.user, "Current user fetch successfully")
+        )
 })
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
+    // req.body taking fullname and email
+    // checking fullname and email
+    // perform DB operation findByIdAndUpdate
+    // return res
+
     const { fullName, email } = req.body
 
     if (!(fullName || email)) {
@@ -277,6 +297,14 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
 })
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
+    // take avatarLocalPath from req.file
+    // checking avatarLocalPath
+    // upload into cloudinary and return res
+    // checking upload
+    // perform user operation on DB using mongoose findByIdUpdate 
+    // checking user
+    // return res
+
     const avatarLocalPath = req.file?.path
 
     if (!avatarLocalPath) {
@@ -308,6 +336,14 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 })
 
 const updateUserCoverImage = asyncHandler(async (req, res) => {
+    // take CoverImageLocalPath from req.file
+    // checking CoverImageLocalPath
+    // upload into cloudinary and return res
+    // checking upload
+    // perform user operation on DB using mongoose findByIdUpdate 
+    // checking user
+    // return res
+
     const CoverImageLocalPath = req.file?.path
 
     if (!CoverImageLocalPath) {
@@ -338,6 +374,84 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
 
 })
 
+const getUserChannelProfile = asyncHandler(async (req, res) => {
+    // req.params
+    // checking username exist
+    // find out subscriber though channel using aggregate pipeline
+    // checking channel exist
+    // return response
+
+    const { username } = req.params
+
+    if (username) {
+        throw new ApiError(400, "Username is missing")
+    }
+
+    const channel = await User.aggregate([
+        {
+            $match: {
+                username: username?.toLowerCase()
+            }
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers"
+            }
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscriberTo"
+            }
+        },
+        {
+            $addFields: {
+                subScribersCount: {
+                    $size: "$subscibers"
+                },
+                channelSubscribedToCount: {
+                    $size: "$subscribedTo"
+                },
+                isSubscribed: {
+                    $cond: {
+                        if: { $in: [req.user?._id, "$subscribers,subscriber"] },
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        },
+        {
+            $project: {
+                fullName: 1,
+                username: 1,
+                subScribersCount: 1,
+                channelSubscribedToCount: 1,
+                isSubscribed: 1,
+                avatar: 1,
+                coverImage: 1,
+                email: 1,
+            }
+        }
+    ])
+
+    if (!channel?.length) {
+        throw new ApiError(404, "channel does not exists")
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, channel[0], "User channel fetch successfully")
+        )
+
+})
+
 export {
     registerUser,
     loginUser,
@@ -348,5 +462,6 @@ export {
     updateAccountDetails,
     updateUserAvatar,
     updateUserCoverImage,
+    getUserChannelProfile
 }
 
