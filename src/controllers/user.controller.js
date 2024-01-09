@@ -3,7 +3,7 @@ import { ApiError } from "../utils/ApiError.js"
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { jwt } from "jsonwebtoken";
+import jwt  from "jsonwebtoken";
 
 const generateAccessAndRefreshTokens = async (userId) => {
     try {
@@ -159,15 +159,15 @@ const loginUser = asyncHandler(async (req, res) => {
 })
 
 const logoutUser = asyncHandler(async (req, res) => {
-    // we haved user id becouse of auth-middleware "req.user?._id" 
-    // find out user by id and set refreshToken field to undefined
+    // we have user id because of auth-middleware "req.user?._id" 
+    // find out user by id and set refreshToken field to "1" this removes the filed from the from the document 
     // return res and set cookie to "clearCookie"
 
     await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set: {
-                refreshToken: undefined
+            $unset: {
+                refreshToken: 1
             }
         },
         {
@@ -234,7 +234,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 })
 
-const chnageCurrentPassword = asyncHandler(async (req, res) => {
+const changeCurrentPassword = asyncHandler(async (req, res) => {
     // req.body { oldPassword, newPassword }
     // find user using "req.user?._id" id that already haved and it comes from auth-middleware
     // checking old password in DB and cheking it matching or not
@@ -512,7 +512,7 @@ export {
     loginUser,
     logoutUser,
     refreshAccessToken,
-    chnageCurrentPassword,
+    changeCurrentPassword,
     getCurrentUser,
     updateAccountDetails,
     updateUserAvatar,
