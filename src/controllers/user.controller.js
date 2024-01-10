@@ -3,7 +3,7 @@ import { ApiError } from "../utils/ApiError.js"
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import jwt  from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
 const generateAccessAndRefreshTokens = async (userId) => {
     try {
@@ -162,6 +162,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     // we have user id because of auth-middleware "req.user?._id" 
     // find out user by id and set refreshToken field to "1" this removes the filed from the from the document 
     // return res and set cookie to "clearCookie"
+    const username = req.user.username;
 
     await User.findByIdAndUpdate(
         req.user._id,
@@ -184,7 +185,7 @@ const logoutUser = asyncHandler(async (req, res) => {
         .status(200)
         .clearCookie("accessToken", options)
         .clearCookie("refreshToken", options)
-        .json(new ApiResponse(200, {}, "User Logged Out"))
+        .json(new ApiResponse(200, {}, `${username} Logged Out`))
 })
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
@@ -192,16 +193,16 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     // Refresh Token - Long lived, stored in db
     // When access token expires, the frontend sends the refresh token to the backend to validate user (login), once again.
 
-    const incomingRefreshToken = req.cookie.refreshToken || req.body.refreshToken
+    const incomingRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken
 
     if (!incomingRefreshToken) {
         throw new ApiError(401, "unauthorized request")
     }
 
     try {
-        const decodedToken = jwt.verify(incomingRefreshToken, process.env.ACCESS_TOKEN_SECRET)
+        const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
 
-        const user = User.findById(decodedToken?._id)
+        const user = await User.findById(decodedToken?._id)
 
         if (!user) {
             throw new ApiError(401, "Invalid refresh token")
@@ -236,14 +237,15 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 const changeCurrentPassword = asyncHandler(async (req, res) => {
     // req.body { oldPassword, newPassword }
-    // find user using "req.user?._id" id that already haved and it comes from auth-middleware
-    // checking old password in DB and cheking it matching or not
+    // find user using "req.user?._id" id that already have and it comes from auth-middleware
+    // checking old password in DB and checking it matching or not
     // if oldPassword and DB password match then save newPassword into DB password field
     // return res
 
     const { oldPassword, newPassword } = req.body
 
     const user = await User.findById(user.req?._id)
+    console.log(user)
     const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
 
     if (!isPasswordCorrect) {
@@ -453,7 +455,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
 })
 
 const getWatchHistory = asyncHandler(async (req, res) => {
-    
+
     const user = await User.aggregate([
         {
             $match: {

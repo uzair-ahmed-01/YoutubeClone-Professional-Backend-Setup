@@ -2,12 +2,11 @@ import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
 
-
 const app = express()
 
 const corsOption = {
-    origin: process.env.CORS_ORIGIN,
-    Credential: true,
+    origin: process.env.CORS_ORIGIN || ALL,
+    credentials: true,
 }
 
 app.use(cors(corsOption))
@@ -18,6 +17,7 @@ app.use(cookieParser())
 
 // routes import
 import userRouter from "./routes/user.routes.js"
+import { ALL } from "dns"
 
 
 // routes declaration and we can say prefix api
