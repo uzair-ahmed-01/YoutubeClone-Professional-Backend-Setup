@@ -10,7 +10,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
     try {
         const user = await User.findById(userId)
         const accessToken = user.generateAccessToken()
-        const refreshToken = user.generateRefereshToken()
+        const refreshToken = user.generateRefreshToken()
 
         user.refreshToken = refreshToken
         await user.save({ validateBeforeSave: false })
@@ -18,7 +18,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
         return { accessToken, refreshToken }
 
     } catch (error) {
-        throw new ApiError(500, "Something went wrong while generating access and referesh token")
+        throw new ApiError(500, "Something went wrong while generating access and refresh token")
     }
 }
 
@@ -54,7 +54,7 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     // check for images, check for avatar
-    const avaratLocalPath = req.files?.avatar[0]?.path
+    const avatarLocalPath = req.files?.avatar[0]?.path
     //const coverImageLocalPath = req.files?.coverImage[0]?.path
     //console.log(req.files)
 
@@ -64,11 +64,11 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     // upload them to cloudinary, avatar & coverImage
-    if (!avaratLocalPath) {
+    if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar Path is required")
     }
 
-    const avatar = await uploadOnCloudinary(avaratLocalPath)
+    const avatar = await uploadOnCloudinary(avatarLocalPath)
     const coverImage = await uploadOnCloudinary(coverImageLocalPath)
     //console.log(avatar)
     //console.log(coverImage)
@@ -94,7 +94,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // check for user creation
     if (!createdUser) {
-        throw new ApiError(500, "Something went wronng while registreting the user")
+        throw new ApiError(500, "Something went wrong while registering the user")
     }
 
     // return res
@@ -125,7 +125,7 @@ const loginUser = asyncHandler(async (req, res) => {
     })
 
     if (!user) {
-        throw new ApiError(404, "User does nont exist")
+        throw new ApiError(404, "User does not exist")
     }
 
     const isPasswordValid = await user.isPasswordCorrect(password)
