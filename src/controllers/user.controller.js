@@ -6,6 +6,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
+// Function for generating access & refresh token
 const generateAccessAndRefreshTokens = async (userId) => {
     try {
         const user = await User.findById(userId)
@@ -22,6 +23,9 @@ const generateAccessAndRefreshTokens = async (userId) => {
     }
 }
 
+// @desc    Register user
+// @route   POST /api/v1/users/register
+// @access  Public
 const registerUser = asyncHandler(async (req, res) => {
     // # Algorithm
     // get user details from frontend
@@ -103,7 +107,9 @@ const registerUser = asyncHandler(async (req, res) => {
     )
 })
 
-
+// @desc    Login user
+// @route   POST /api/v1/users/login
+// @access  Public
 const loginUser = asyncHandler(async (req, res) => {
     // req body -> data
     // checking username or email is empty or not
@@ -159,6 +165,9 @@ const loginUser = asyncHandler(async (req, res) => {
 
 })
 
+// @desc    Log user out / clear cookie
+// @route   POST /api/v1/users/logout
+// @access  Private
 const logoutUser = asyncHandler(async (req, res) => {
     // we have user id because of auth-middleware "req.user?._id" 
     // find out user by id and set refreshToken field to "1" this removes the filed from the from the document 
@@ -189,6 +198,9 @@ const logoutUser = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, {}, `${username} Logged Out`))
 })
 
+// @desc    Generate Access & Refresh Tokens
+// @route   POST /api/v1/users/refresh-token
+// @access  Private
 const refreshAccessToken = asyncHandler(async (req, res) => {
     // Access Token - Short lived, not stored in db
     // Refresh Token - Long lived, stored in db
@@ -236,6 +248,9 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 })
 
+// @desc    Change current password
+// @route   POST /api/v1/users/change-password
+// @access  Private
 const changeCurrentPassword = asyncHandler(async (req, res) => {
     // req.body { oldPassword, newPassword }
     // find user using "req.user?._id" id that already have and it comes from auth-middleware
@@ -262,6 +277,9 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 
 })
 
+// @desc    Get current user
+// @route   POST /api/v1/users/current-user
+// @access  Private
 const getCurrentUser = asyncHandler(async (req, res) => {
     // in auth-middleware we already have user in "req.user" so directly send res
 
@@ -271,6 +289,9 @@ const getCurrentUser = asyncHandler(async (req, res) => {
         )
 })
 
+// @desc    Update Account Details
+// @route   POST /api/v1/users/update-account
+// @access  Private
 const updateAccountDetails = asyncHandler(async (req, res) => {
     // req.body taking fileName and email
     // checking fileName and email
@@ -299,6 +320,9 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, user, "Account details updated successfully"))
 })
 
+// @desc    Update avatar 
+// @route   POST /api/v1/users/avatar
+// @access  Private
 const updateUserAvatar = asyncHandler(async (req, res) => {
     // take avatarLocalPath from req.file
     // checking avatarLocalPath
@@ -338,6 +362,9 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 
 })
 
+// @desc    Update coverImage
+// @route   POST /api/v1/users/cover-image
+// @access  Private
 const updateUserCoverImage = asyncHandler(async (req, res) => {
     // take CoverImageLocalPath from req.file
     // checking CoverImageLocalPath
@@ -377,6 +404,9 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
 
 })
 
+// @desc    Get channel profile
+// @route   POST /api/v1/users/channel/:username
+// @access  Private
 const getUserChannelProfile = asyncHandler(async (req, res) => {
     // req.params
     // checking username exist
@@ -455,6 +485,9 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
 
 })
 
+// @desc    Get watch history
+// @route   POST /api/v1/users/history
+// @access  Private
 const getWatchHistory = asyncHandler(async (req, res) => {
     
         const user = await User.aggregate([
